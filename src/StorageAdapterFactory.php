@@ -47,6 +47,9 @@ class StorageAdapterFactory
             Redis::setPrefix($config['prefix']);
         }
 
+        if (isset($config['database'])) {
+            $config['database'] = (int)$config['database'];
+        }
         return new Redis($config);
     }
 }
