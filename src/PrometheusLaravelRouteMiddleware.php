@@ -117,9 +117,9 @@ class PrometheusLaravelRouteMiddleware
     private function getConfigLabels(): array
     {
         return [
-            'owner' => config('prometheus.standard_metrics.owner'),
-            'domain' => config('prometheus.standard_metrics.domain'),
-            'system' => config('prometheus.standard_metrics.system'),
+            'owner' => config('prometheus.standard_metrics.owner') ?: '',
+            'domain' => config('prometheus.standard_metrics.domain') ?: '',
+            'system' => config('prometheus.standard_metrics.system') ?: '',
         ];
     }
 
@@ -128,10 +128,10 @@ class PrometheusLaravelRouteMiddleware
         $route = $this->getMatchedRoute($request);
         $controllerAction = $route->getActionName();
         $component = class_basename(explode('@', $controllerAction)[0]);
-        $operation = explode('@', $controllerAction)[1] ?? null;
+        $operation = explode('@', $controllerAction)[1] ?? 'unknown';
 
         return [
-            'component' => $component,
+            'component' => $component ?: 'unknown',
             'operation' => $operation
         ];
     }

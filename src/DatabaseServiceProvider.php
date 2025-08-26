@@ -20,10 +20,11 @@ class DatabaseServiceProvider extends ServiceProvider
             if (config('prometheus.collect_full_sql_query')) {
                 $querySql = $this->cleanupSqlString((string)$query->sql);
             }
-            $labels = array_values(array_filter([
-                $querySql,
-                $type
-            ]));
+            
+            $labels = [
+                $querySql ?: '[omitted]',
+                $type ?: 'UNKNOWN'
+            ];
 
             // если включён флаг, ищем сервис
             if (config('prometheus.collect_sql_service_caller')) {
@@ -68,7 +69,7 @@ class DatabaseServiceProvider extends ServiceProvider
             return $app['prometheus']->getOrRegisterHistogram(
                 'sql_query_duration',
                 'SQL query duration histogram',
-                array_values(array_filter($labelNames)),
+                $labelNames,
                 config('prometheus.sql_buckets') ?? null
             );
         });

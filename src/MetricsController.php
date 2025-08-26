@@ -41,11 +41,16 @@ class MetricsController extends Controller
      */
     public function getMetrics() : Response
     {
-        $metrics = $this->prometheusExporter->export();
+        try {
+            $metrics = $this->prometheusExporter->export();
 
-        $renderer = new RenderTextFormat();
-        $result = $renderer->render($metrics);
+            $renderer = new RenderTextFormat();
+            $result = $renderer->render($metrics);
 
-        return $this->responseFactory->make($result, 200, ['Content-Type' => RenderTextFormat::MIME_TYPE]);
+            return $this->responseFactory->make($result, 200, ['Content-Type' => RenderTextFormat::MIME_TYPE]);
+        } catch (\ValueError $e) {
+            // Handle array_combine errors gracefully
+            return $this->responseFactory->make('# Prometheus metrics temporarily unavailable due to configuration issue', 503, ['Content-Type' => RenderTextFormat::MIME_TYPE]);
+        }
     }
 }
