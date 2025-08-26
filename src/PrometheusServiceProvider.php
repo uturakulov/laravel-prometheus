@@ -105,15 +105,6 @@ class PrometheusServiceProvider extends ServiceProvider
         }
     }
 
-    private function registerCommands(): void
-    {
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                Commands\FlushMetricsCommand::class,
-            ]);
-        }
-    }
-
     private function configPath($path) : string
     {
         return $this->app->basePath() . ($path ? DIRECTORY_SEPARATOR . $path : '');
