@@ -210,6 +210,39 @@ The `PROMETHEUS_STORAGE_ADAPTER` environment variable is used to specify the sto
 
 If `redis` is used, the `PROMETHEUS_REDIS_HOST` and `PROMETHEUS_REDIS_PORT` vars also need to be configured. Optionally you can change the `PROMETHEUS_REDIS_TIMEOUT`, `PROMETHEUS_REDIS_READ_TIMEOUT` and `PROMETHEUS_REDIS_PERSISTENT_CONNECTIONS` variables.
 
+## ⚠️ Performance Issue & Solutions
+
+**CRITICAL**: This package can cause **20-40 second delays** in HTTP requests due to synchronous Redis operations in middleware!
+
+## 🚀 **Solution 1: Non-Blocking Mode (Recommended)**
+
+**Simplest fix**: Use `terminate()` method - metrics recorded AFTER response is sent:
+
+```php
+// Replace middleware:
+$app->middleware([
+    \Uturakulov\LaravelPrometheus\NonBlockingPrometheusLaravelRouteMiddleware::class,
+]);
+
+// Replace providers:
+$app->register(\Uturakulov\LaravelPrometheus\NonBlockingDatabaseServiceProvider::class);
+```
+
+**Result**: Instant HTTP responses, all metrics still collected!
+
+📖 **[Non-Blocking Setup Guide](NON_BLOCKING_SETUP.md)** ⭐ *Recommended*
+
+## 🔄 **Solution 2: Async Mode (Advanced)**
+
+For high-traffic applications, use queue-based processing:
+
+```env
+PROMETHEUS_ASYNC_ENABLED=true
+PROMETHEUS_ASYNC_QUEUE=prometheus
+```
+
+📖 **[Complete Async Setup Guide](ASYNC_SETUP.md)**
+
 ## Exporting Metrics
 
 The package adds a `/metrics` endpoint, enabled by default, which exposes all metrics gathered by collectors.

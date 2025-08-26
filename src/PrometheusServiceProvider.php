@@ -21,6 +21,7 @@ class PrometheusServiceProvider extends ServiceProvider
             __DIR__ . '/../config/prometheus.php' => $this->configPath('prometheus.php'),
         ]);
         $this->loadRoutes();
+        $this->registerCommands();
     }
 
     /**
@@ -56,6 +57,11 @@ class PrometheusServiceProvider extends ServiceProvider
             return $factory->make($driver, $config);
         });
         $this->app->alias(Adapter::class, 'prometheus.storage_adapter');
+
+        // Register AsyncMetricsService
+        $this->app->singleton(AsyncMetricsService::class, function ($app) {
+            return new AsyncMetricsService();
+        });
     }
 
     /**
@@ -69,6 +75,7 @@ class PrometheusServiceProvider extends ServiceProvider
             'prometheus',
             'prometheus.storage_adapter',
             'prometheus.storage_adapter_factory',
+            AsyncMetricsService::class,
         ];
     }
 
@@ -95,6 +102,15 @@ class PrometheusServiceProvider extends ServiceProvider
                 config('prometheus.metrics_route_path'),
                 MetricsController::class . '@getMetrics'
             )->name('metrics');
+        }
+    }
+
+    private function registerCommands(): void
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                Commands\FlushMetricsCommand::class,
+            ]);
         }
     }
 

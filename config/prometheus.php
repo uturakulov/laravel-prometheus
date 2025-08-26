@@ -90,6 +90,35 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Async Processing
+    |--------------------------------------------------------------------------
+    |
+    | Enable async processing of metrics to avoid blocking main request.
+    | When enabled, metrics will be queued and processed in background.
+    |
+    */
+
+    'async_enabled' => env('PROMETHEUS_ASYNC_ENABLED', false),
+    'async_queue' => env('PROMETHEUS_ASYNC_QUEUE', 'default'),
+    'async_connection' => env('PROMETHEUS_ASYNC_CONNECTION', null),
+    'async_delay' => env('PROMETHEUS_ASYNC_DELAY', 0), // seconds
+    'async_batch_size' => env('PROMETHEUS_ASYNC_BATCH_SIZE', 100),
+    'async_timeout' => env('PROMETHEUS_ASYNC_TIMEOUT', 30), // seconds
+
+    /*
+    |--------------------------------------------------------------------------
+    | Fallback Storage
+    |--------------------------------------------------------------------------
+    |
+    | When async is enabled, use a fast local storage for temporary metrics
+    | before they are processed by queue workers.
+    |
+    */
+
+    'fallback_storage' => env('PROMETHEUS_FALLBACK_STORAGE', 'memory'), // memory, apc
+
+    /*
+    |--------------------------------------------------------------------------
     | Collectors
     |--------------------------------------------------------------------------
     |
