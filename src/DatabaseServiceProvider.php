@@ -68,7 +68,7 @@ class DatabaseServiceProvider extends ServiceProvider
             return $app['prometheus']->getOrRegisterHistogram(
                 'sql_query_duration',
                 'SQL query duration histogram',
-                $labelNames,
+                array_values(array_filter($labelNames)),
                 config('prometheus.sql_buckets') ?? null
             );
         });
