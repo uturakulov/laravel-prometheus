@@ -21,7 +21,6 @@ class PrometheusServiceProvider extends ServiceProvider
             __DIR__ . '/../config/prometheus.php' => $this->configPath('prometheus.php'),
         ]);
         $this->loadRoutes();
-        $this->registerCommands();
     }
 
     /**
