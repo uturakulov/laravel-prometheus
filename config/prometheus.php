@@ -86,6 +86,8 @@ return [
 
     'collect_full_sql_query' => env('PROMETHEUS_COLLECT_FULL_SQL_QUERY', false),
 
+    'collect_sql_service_caller' => env('PROMETHEUS_SQL_COLLECT_SERVICE_CALLER', false),
+
     /*
     |--------------------------------------------------------------------------
     | Collectors
