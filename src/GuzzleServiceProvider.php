@@ -19,6 +19,7 @@ class GuzzleServiceProvider extends ServiceProvider
      */
     public function register() : void
     {
+        // register a single histogram for Http facade requests
         $this->app->singleton('prometheus.guzzle.client.histogram', function ($app) {
             return $app['prometheus']->getOrRegisterHistogram(
                 'guzzle_response_duration',
@@ -27,7 +28,9 @@ class GuzzleServiceProvider extends ServiceProvider
                 config('prometheus.guzzle_buckets') ?? null
             );
         });
-        $this->app->singleton('prometheus.guzzle.handler', function ($app) {
+
+        // base handler + middleware
+        $this->app->singleton('prometheus.guzzle.handler', function () {
             return new CurlHandler();
         });
         $this->app->singleton('prometheus.guzzle.middleware', function ($app) {
@@ -37,9 +40,6 @@ class GuzzleServiceProvider extends ServiceProvider
             $stack = HandlerStack::create($app['prometheus.guzzle.handler']);
             $stack->push($app['prometheus.guzzle.middleware']);
             return $stack;
-        });
-        $this->app->singleton('prometheus.guzzle.client', function ($app) {
-            return new Client(['handler' => $app['prometheus.guzzle.handler-stack']]);
         });
     }
 
