@@ -59,7 +59,7 @@ class NonBlockingDatabaseServiceProvider extends ServiceProvider
                     $type
                 ]));
                 
-                $histogram->observe($metricData['time'], $labels);
+                $histogram->observe($metricData['time'] / 1000, $labels);
             }
             
         } catch (\Exception $e) {
