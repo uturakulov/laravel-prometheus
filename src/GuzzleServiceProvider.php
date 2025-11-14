@@ -45,9 +45,11 @@ class GuzzleServiceProvider extends ServiceProvider
 
     public function boot() : void
     {
-        Http::globalOptions([
-            'handler' => $this->app['prometheus.guzzle.handler-stack'],
-        ]);
+        if (!$this->app->runningUnitTests()) {
+            Http::globalOptions([
+                'handler' => $this->app['prometheus.guzzle.handler-stack'],
+            ]);
+        }
     }
 
     /**
