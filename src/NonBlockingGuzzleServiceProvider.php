@@ -10,6 +10,8 @@ use Illuminate\Support\ServiceProvider;
 
 class NonBlockingGuzzleServiceProvider extends ServiceProvider
 {
+    use RegistersGuzzlePathNormalizer;
+
     /**
      * Perform post-registration booting of services.
      */
@@ -17,7 +19,10 @@ class NonBlockingGuzzleServiceProvider extends ServiceProvider
     {
         $this->app->extend(Client::class, function (Client $client, $app) {
             $histogram = $app['prometheus.guzzle.histogram'];
-            $middleware = new NonBlockingGuzzleMiddleware($histogram);
+            $middleware = new NonBlockingGuzzleMiddleware(
+                $histogram,
+                $app->make(GuzzlePathNormalizer::class)
+            );
             
             $config = $client->getConfig();
             $handler = $config['handler'] ?? HandlerStack::create();
@@ -35,11 +40,13 @@ class NonBlockingGuzzleServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->registerGuzzlePathNormalizer();
+
         $this->app->singleton('prometheus.guzzle.histogram', function ($app) {
             return $app['prometheus']->getOrRegisterHistogram(
                 'guzzle_request_duration_seconds',
                 'Guzzle HTTP request duration in seconds',
-                ['method', 'external_endpoint', 'status_code'],
+                GuzzleMiddleware::HISTOGRAM_LABELS,
                 config('prometheus.guzzle_buckets') ?? null
             );
         });
