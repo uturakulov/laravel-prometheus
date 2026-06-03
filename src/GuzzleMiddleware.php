@@ -10,17 +10,19 @@ use Prometheus\Histogram;
 
 class GuzzleMiddleware
 {
+    public const HISTOGRAM_LABELS = ['method', 'external_host', 'external_path', 'status_code'];
+
     /**
      * @var Histogram
      */
     private $histogram;
 
-    /**
-     * @param Histogram $histogram
-     */
-    public function __construct(Histogram $histogram)
+    private GuzzlePathNormalizer $pathNormalizer;
+
+    public function __construct(Histogram $histogram, GuzzlePathNormalizer $pathNormalizer)
     {
         $this->histogram = $histogram;
+        $this->pathNormalizer = $pathNormalizer;
     }
 
     /**
@@ -37,12 +39,15 @@ class GuzzleMiddleware
             $start = microtime(true);
             return $handler($request, $options)->then(
                 function (Response $response) use ($request, $start) {
+                    [$externalHost, $externalPath] = $this->pathNormalizer->resolve($request);
+
                     $this->histogram->observe(
                         microtime(true) - $start,
                         [
                             $request->getMethod(),
-                            $request->getUri()->getHost(),
-                            $response->getStatusCode(),
+                            $externalHost,
+                            $externalPath,
+                            (string) $response->getStatusCode(),
                         ]
                     );
                     return $response;

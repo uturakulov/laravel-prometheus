@@ -128,6 +128,26 @@ return [
     'sql_buckets' => null,
     'guzzle_buckets' => null,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Guzzle path normalization
+    |--------------------------------------------------------------------------
+    |
+    | Outbound HTTP metrics use external_host + external_path labels.
+    | Paths are templated to limit cardinality (e.g. /v1/users/42 -> /v1/users/{id}).
+    |
+    | rules: optional per-host regex overrides, e.g.
+    |   ['host' => 'api.example.com', 'pattern' => '#^/v1/users/\d+$#', 'template' => '/v1/users/{id}'],
+    |
+    */
+
+    'guzzle_path_normalization' => [
+        'enabled' => env('PROMETHEUS_GUZZLE_PATH_NORMALIZATION', true),
+        'max_segments' => env('PROMETHEUS_GUZZLE_PATH_MAX_SEGMENTS'),
+        'rules' => [
+            // ['host' => 'api.example.com', 'pattern' => '#^/v1/users/\d+$#', 'template' => '/v1/users/{id}'],
+        ],
+    ],
 
     'standard_metrics' => [
         'owner' => env('PROMETHEUS_STANDARD_METRICS_OWNER'),

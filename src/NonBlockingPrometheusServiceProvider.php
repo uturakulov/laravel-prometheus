@@ -119,9 +119,10 @@ class NonBlockingPrometheusServiceProvider extends ServiceProvider
     {
         try {
             // Обработка Guzzle метрик если они есть
-            if (class_exists(NonBlockingGuzzleMiddleware::class)) {
+            if (class_exists(NonBlockingGuzzleMiddleware::class) && $this->app->bound('prometheus.guzzle.histogram')) {
                 $guzzleMiddleware = new NonBlockingGuzzleMiddleware(
-                    $this->app->make('prometheus.guzzle.histogram')
+                    $this->app->make('prometheus.guzzle.histogram'),
+                    $this->app->make(GuzzlePathNormalizer::class)
                 );
                 $guzzleMiddleware->processPendingMetrics();
             }

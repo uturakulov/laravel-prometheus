@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-06-03
+### Added
+- Guzzle metrics labels `external_host` and `external_path` with path normalization (`GuzzlePathNormalizer`).
+- Config section `guzzle_path_normalization` (rules, heuristics, optional `max_segments`).
+- PHPUnit tests for path normalization and Guzzle middleware.
+
+### Changed
+- Guzzle histogram label set: `external_endpoint` replaced by `external_host` + `external_path` (breaking for existing Prometheus series and dashboards).
+
 ## [2.0.0] - 2020-02-12
 ### Added
  - Add PHP 7.2 support.

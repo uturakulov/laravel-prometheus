@@ -15,21 +15,23 @@ class NonBlockingGuzzleMiddleware
      */
     private $histogram;
 
+    private GuzzlePathNormalizer $pathNormalizer;
+
     /**
      * @var array
      */
     private static array $pendingMetrics = [];
 
-    /**
-     * @param Histogram $histogram
-     */
-    public function __construct(Histogram $histogram)
+    private static bool $terminationHandlerRegistered = false;
+
+    public function __construct(Histogram $histogram, GuzzlePathNormalizer $pathNormalizer)
     {
         $this->histogram = $histogram;
-        
-        // Регистрируем обработчик завершения приложения только один раз
-        if (empty(self::$pendingMetrics)) {
+        $this->pathNormalizer = $pathNormalizer;
+
+        if (!self::$terminationHandlerRegistered) {
             $this->registerTerminationHandler();
+            self::$terminationHandlerRegistered = true;
         }
     }
 
@@ -48,19 +50,20 @@ class NonBlockingGuzzleMiddleware
             return $handler($request, $options)->then(
                 function (Response $response) use ($request, $start) {
                     $duration = microtime(true) - $start;
-                    
-                    // Сохраняем метрику для обработки после завершения запроса
+                    [$externalHost, $externalPath] = $this->pathNormalizer->resolve($request);
+
                     self::$pendingMetrics[] = [
                         'histogram' => $this->histogram,
                         'duration' => $duration,
                         'labels' => [
                             $request->getMethod(),
-                            $request->getUri()->getHost(),
-                            $response->getStatusCode(),
+                            $externalHost,
+                            $externalPath,
+                            (string) $response->getStatusCode(),
                         ],
-                        'timestamp' => microtime(true)
+                        'timestamp' => microtime(true),
                     ];
-                    
+
                     return $response;
                 }
             );

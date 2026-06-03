@@ -118,10 +118,13 @@ The labels exported are
 ```php
 [
     'method',
-    'external_endpoint',
+    'external_host',
+    'external_path', // normalized, e.g. /v1/users/{id}
     'status_code'
 ]
 ```
+
+Path templates are configured in `config/prometheus.php` under `guzzle_path_normalization`.
 
 To observe SQL metrics, you should register the following provider in `bootstrap/app.php`:
 ```php

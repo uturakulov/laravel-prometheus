@@ -12,6 +12,8 @@ use Illuminate\Support\ServiceProvider;
 
 class GuzzleServiceProvider extends ServiceProvider
 {
+    use RegistersGuzzlePathNormalizer;
+
     /**
      * Register bindings in the container.
      *
@@ -19,12 +21,14 @@ class GuzzleServiceProvider extends ServiceProvider
      */
     public function register() : void
     {
+        $this->registerGuzzlePathNormalizer();
+
         // register a single histogram for Http facade requests
         $this->app->singleton('prometheus.guzzle.client.histogram', function ($app) {
             return $app['prometheus']->getOrRegisterHistogram(
                 'guzzle_response_duration',
                 'Guzzle response duration histogram',
-                ['method', 'external_endpoint', 'status_code'],
+                GuzzleMiddleware::HISTOGRAM_LABELS,
                 config('prometheus.guzzle_buckets') ?? null
             );
         });
@@ -34,7 +38,10 @@ class GuzzleServiceProvider extends ServiceProvider
             return new CurlHandler();
         });
         $this->app->singleton('prometheus.guzzle.middleware', function ($app) {
-            return new GuzzleMiddleware($app['prometheus.guzzle.client.histogram']);
+            return new GuzzleMiddleware(
+                $app['prometheus.guzzle.client.histogram'],
+                $app->make(GuzzlePathNormalizer::class)
+            );
         });
         $this->app->singleton('prometheus.guzzle.handler-stack', function ($app) {
             $stack = HandlerStack::create($app['prometheus.guzzle.handler']);
